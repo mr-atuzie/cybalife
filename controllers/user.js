@@ -206,4 +206,5 @@ module.exports = {
   deleteUser,
   logout,
   loginStatus,
+  forgotPassword,
 };
