@@ -1,118 +1,209 @@
 const User = require("../models/User");
+const asyncHandler = require("express-async-handler");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-exports.createUser = async (req, res) => {
-  try {
-    const newUser = await User.create(req.body);
-
-    res.status(201).json({
-      success: true,
-      message: "User created.",
-      data: {
-        user: newUser,
-      },
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error,
-    });
-  }
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 };
 
-exports.loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
 
-    const user = await User.findOne({ email });
+  if (!name || !email || !password) {
+    res.status(400);
+    throw new Error("Please fill up all required fields.");
+  }
 
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "User doesn't exist",
-      });
-    }
+  //Check password length
+  if (password.length < 6) {
+    res.status(400);
+    throw new Error("Password must be up to 6 characters.");
+  }
 
-    if (password !== user.password) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Credentials",
-      });
-    }
+  //Check if user already exist
+  const checkEmail = await User.findOne({ email });
 
+  if (checkEmail) {
+    res.status(400);
+    throw new Error("Email has already been register.");
+  }
+
+  //Hash user password
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(password, salt);
+
+  const user = await User.create({ name, email, password: hashPassword });
+
+  // Generate token
+  const token = generateToken(user._id);
+
+  //Send HTTP-only cookie
+  res.cookie("token", token, {
+    path: "/",
+    httpOnly: true,
+    expires: new Date(Date.now() + 1000 * 86400),
+    sameSite: "none",
+    secure: true,
+  });
+
+  if (user) {
     res.status(201).json({
       success: true,
-      message: "Login successful.",
+      data: {
+        ...user._doc,
+        token,
+      },
+    });
+  } else {
+    res.status(400);
+    throw new Error("Unable to register user , Please try again");
+  }
+});
+
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  //Valid Request
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("Please fill up all required fields.");
+  }
+
+  //Check if user exist
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(400);
+    throw new Error("User not found, please signup");
+  }
+
+  //Check if password is valid
+  const checkPassword = await bcrypt.compare(password, user.password);
+
+  if (!checkPassword) {
+    res.status(400);
+    throw new Error("Incorrect password");
+  }
+
+  //Generate Token
+  const token = generateToken(user._id);
+
+  //Send HTTP-only
+  res.cookie("token", token, {
+    path: "/",
+    httpOnly: true,
+    expires: new Date(Date.now() + 1000 + 86400),
+    sameSite: "none",
+    secure: true,
+  });
+
+  //Send Response
+  if (user && checkPassword) {
+    res.status(200).json({
+      success: true,
+      data: {
+        ...user._doc,
+        token,
+      },
+    });
+  } else {
+    res.status(400);
+    throw new Error("Invalid login credentials");
+  }
+});
+
+const logout = asyncHandler(async (req, res) => {
+  res.cookie("token", "", {
+    path: "/",
+    httpOnly: true,
+    expires: new Date(0),
+    sameSite: "none",
+    secure: true,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Log out Successful",
+  });
+});
+
+const getUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    res.status(200).json({
+      success: true,
       data: {
         user,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error,
-    });
+  } else {
+    res.status(400);
+    throw new Error("User not found.");
   }
-};
+});
 
-exports.getUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
+const loginStatus = asyncHandler(async (req, res) => {
+  const token = req.cookies.token;
 
-    res.status(200).json({
-      success: true,
-      message: "Successful",
-      user,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: true,
-      message: error,
-    });
+  if (!token) {
+    return res.json(false);
   }
-};
 
-exports.updateUser = async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+  const verified = jwt.verify(token, process.env.JWT_SECRET);
+
+  if (verified) {
+    return res.json(true);
+  }
+});
+
+const updateUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    const user = await User.findByIdAndUpdate(req.user._id, req.body, {
       new: true,
     });
 
     res.status(200).json({
       success: true,
-      message: "User updated.",
-      user,
+      data: {
+        user,
+      },
     });
-  } catch (error) {
-    res.status(400).json({
-      success: true,
-      message: error,
-    });
+  } else {
+    res.status(400);
+    throw new Error("User not found");
   }
-};
+});
 
-exports.deleteUser = async (req, res) => {
-  try {
-    await User.findByIdAndDelete(req.params.id);
+const deleteUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    const user = await User.findByIdAndDelete(req.user._id);
 
     res.status(204).json({
       success: true,
-      message: "User deleted.",
+      data: {
+        user,
+      },
     });
-  } catch (error) {
-    res.status(400).json({
-      success: true,
-      message: error,
-    });
+  } else {
+    res.status(400);
+    throw new Error("User not found");
   }
-};
+});
 
-exports.logout = async (req, res) => {
-  try {
-    res.send("logout");
-  } catch (error) {
-    res.status(400).json({
-      success: true,
-      message: error,
-    });
-  }
+const forgotPassword = asyncHandler(async (req, res) => {});
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getUser,
+  updateUser,
+  deleteUser,
+  logout,
+  loginStatus,
 };
