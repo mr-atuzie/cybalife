@@ -26,10 +26,10 @@ app.get("/", (req, res) => {
   res.send("Cybalife");
 });
 
-app.use("/api/v1/user", userRoutes);
-app.use("/api/v1/product", productRoutes);
-app.use("/api/v1/medical", medicalRoutes);
-app.use("/api/v1/store", storeRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/medicals", medicalRoutes);
+app.use("/api/v1/stores", storeRoutes);
 
 //Error Middleware
 app.use(errorHandler);

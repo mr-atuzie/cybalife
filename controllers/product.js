@@ -1,25 +1,37 @@
 const Product = require("../models/Product");
+const asyncHandler = require("express-async-handler");
 
-exports.createProduct = async (req, res) => {
-  try {
-    const newProduct = await Product.create(req.body);
+const createProduct = asyncHandler(async (req, res) => {
+  const { name, sku, category, quantity, price, description } = req.body;
 
+  if (!name || !sku || !category || !quantity || !price || !description) {
+    res.status(400);
+    throw new Error("Please fill in all fields");
+  }
+
+  const product = await Product.create({
+    user: req.user._id,
+    name,
+    sku,
+    category,
+    quantity,
+    description,
+  });
+
+  if (product) {
     res.status(201).json({
       success: true,
-      message: "User created.",
       data: {
-        product: newProduct,
+        product,
       },
     });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error,
-    });
+  } else {
+    res.status(400);
+    throw new Error("Product wasn't created. Please try again");
   }
-};
+});
 
-exports.getProduct = async (req, res) => {
+const getProduct = asyncHandler(async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
@@ -34,9 +46,9 @@ exports.getProduct = async (req, res) => {
       message: error,
     });
   }
-};
+});
 
-exports.getAllProduct = async (req, res) => {
+const getAllProduct = asyncHandler(async (req, res) => {
   try {
     const product = await Product.find();
 
@@ -51,9 +63,9 @@ exports.getAllProduct = async (req, res) => {
       message: error,
     });
   }
-};
+});
 
-exports.updateProduct = async (req, res) => {
+const updateProduct = asyncHandler(async (req, res) => {
   try {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -70,9 +82,9 @@ exports.updateProduct = async (req, res) => {
       message: error,
     });
   }
-};
+});
 
-exports.deleteProduct = async (req, res) => {
+const deleteProduct = asyncHandler(async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
 
@@ -86,4 +98,12 @@ exports.deleteProduct = async (req, res) => {
       message: error,
     });
   }
+});
+
+module.exports = {
+  createProduct,
+  getAllProduct,
+  getProduct,
+  updateProduct,
+  deleteProduct,
 };

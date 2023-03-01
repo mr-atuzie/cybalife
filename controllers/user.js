@@ -210,6 +210,11 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw new Error("User doesn't exist");
   }
 
+  let token = await Token.findOne({ userId: user._id });
+  if (token) {
+    await token.deleteOne();
+  }
+
   let resetToken = crypto.randomBytes(32).toString("hex") + user._id;
 
   const hashToken = crypto
@@ -234,7 +239,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   
   <h6>cybalife</h6>
   `;
-  const subject = "Reset Email";
+  const subject = "Reset Password";
   const send_to = user.email;
   const send_from = process.env.EMAIL_USER;
 
@@ -248,6 +253,35 @@ const forgotPassword = asyncHandler(async (req, res) => {
   }
 });
 
+const resetPassword = asyncHandler(async (req, res) => {
+  const { password } = req.body;
+  const { resetToken } = req.params;
+
+  const hashToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  const userToken = await Token.findOne({
+    token: hashToken,
+    expiresAt: { $gt: Date.now() },
+  });
+
+  if (!userToken) {
+    res.status(404);
+    throw new Error("Invalid or Expired Token.");
+  }
+
+  const user = await User.findOne({ _id: userToken.userId });
+  user.password = password;
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password reset successful, Please login.",
+  });
+});
+
 module.exports = {
   registerUser,
   loginUser,
@@ -257,4 +291,5 @@ module.exports = {
   logout,
   loginStatus,
   forgotPassword,
+  resetPassword,
 };

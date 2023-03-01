@@ -3,9 +3,11 @@ const router = express.Router();
 
 const productController = require("../controllers/product");
 
+const protect = require("../middlewares/authMiddleware");
+
 router
   .route("/")
-  .post(productController.createProduct)
+  .post(protect, productController.createProduct)
   .get(productController.getAllProduct);
 
 router
