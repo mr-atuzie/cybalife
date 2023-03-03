@@ -9,6 +9,7 @@ const userRoutes = require("./routes/user");
 const productRoutes = require("./routes/product");
 const medicalRoutes = require("./routes/medical");
 const storeRoutes = require("./routes/store");
+const contactRoutes = require("./routes/contact");
 const errorHandler = require("./middlewares/errorMiddleware");
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/medicals", medicalRoutes);
 app.use("/api/v1/stores", storeRoutes);
+app.use("/api/v1/contact", contactRoutes);
 
 //Error Middleware
 app.use(errorHandler);

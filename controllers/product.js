@@ -15,6 +15,7 @@ const createProduct = asyncHandler(async (req, res) => {
     sku,
     category,
     quantity,
+    price,
     description,
   });
 
@@ -32,73 +33,97 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const getProduct = asyncHandler(async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id);
 
-    res.status(200).json({
-      success: true,
-      message: "Successful",
-      product,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: true,
-      message: error,
-    });
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
   }
+
+  if (product.user.toString() !== req.user.id) {
+    res.status(401);
+    throw new Error("User is not authorized");
+  }
+
+  res.status(200).json({
+    success: true,
+    data: {
+      product,
+    },
+  });
 });
 
 const getAllProduct = asyncHandler(async (req, res) => {
-  try {
-    const product = await Product.find();
+  const products = await Product.find().sort("-createdAt");
 
-    res.status(200).json({
-      success: true,
-      message: "Successful",
-      product,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: true,
-      message: error,
-    });
-  }
+  res.status(200).json({
+    success: true,
+    result: products.length,
+    data: {
+      products,
+    },
+  });
+});
+
+const getAllUserProduct = asyncHandler(async (req, res) => {
+  const products = await Product.find({ user: req.user.id }).sort("-createdAt");
+
+  res.status(200).json({
+    success: true,
+    result: products.length,
+    data: {
+      products,
+    },
+  });
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
-  try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+  const product = await Product.findById(req.params.id);
 
-    res.status(200).json({
-      success: true,
-      message: "Product updated.",
-      product,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: true,
-      message: error,
-    });
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
   }
+
+  if (product.user.toString() !== req.user.id) {
+    res.status(401);
+    throw new Error("User is not authorized");
+  }
+
+  const newProduct = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: {
+      product: newProduct,
+    },
+  });
 });
 
 const deleteProduct = asyncHandler(async (req, res) => {
-  try {
-    await Product.findByIdAndDelete(req.params.id);
+  const product = await Product.findById(req.params.id);
 
-    res.status(204).json({
-      success: true,
-      message: "Product deleted.",
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: true,
-      message: error,
-    });
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
   }
+
+  if (product.user.toString() !== req.user.id) {
+    res.status(401);
+    throw new Error("User is not authorized");
+  }
+
+  await Product.findByIdAndDelete(req.params.id);
+
+  res.status(204).json({
+    success: true,
+    message: "Product deleted.",
+  });
 });
+
+const contactUs = asyncHandler(async (req, res) => {});
 
 module.exports = {
   createProduct,
@@ -106,4 +131,6 @@ module.exports = {
   getProduct,
   updateProduct,
   deleteProduct,
+  getAllUserProduct,
+  contactUs,
 };
