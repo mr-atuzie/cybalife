@@ -1,5 +1,7 @@
 const Product = require("../models/Product");
 const asyncHandler = require("express-async-handler");
+const { fileSizeFormatter } = require("../utils/fileUpload");
+const cloudinary = require("cloudinary").v2;
 
 const createProduct = asyncHandler(async (req, res) => {
   const { name, sku, category, quantity, price, description } = req.body;
@@ -7,6 +9,27 @@ const createProduct = asyncHandler(async (req, res) => {
   if (!name || !sku || !category || !quantity || !price || !description) {
     res.status(400);
     throw new Error("Please fill in all fields");
+  }
+
+  let fileData = {};
+  if (req.file) {
+    let uploadedFile;
+
+    try {
+      uploadedFile = await cloudinary.uploader.upload(req.file.path, {
+        folder: "Cybalife",
+        resource_type: "image",
+      });
+    } catch (error) {
+      res.status(500);
+      throw new Error("Unable to upload image, Please try again.");
+    }
+    fileData = {
+      fileName: req.file.originalname,
+      filePath: uploadedFile.secure_url,
+      fileType: req.file.mimetype,
+      fileSize: fileSizeFormatter(req.file.size),
+    };
   }
 
   const product = await Product.create({
@@ -17,6 +40,7 @@ const createProduct = asyncHandler(async (req, res) => {
     quantity,
     price,
     description,
+    image: fileData,
   });
 
   if (product) {
@@ -78,6 +102,9 @@ const getAllUserProduct = asyncHandler(async (req, res) => {
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
+
+  const { name, sku, category, quantity, price, description } = req.body;
+  
   const product = await Product.findById(req.params.id);
 
   if (!product) {
