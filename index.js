@@ -1,52 +1,59 @@
 const dotenv = require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
-const morgan = require("morgan");
 const cors = require("cors");
-const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
+const morgan = require("morgan");
 const path = require("path");
 
-const userRoutes = require("./routes/user");
-const productRoutes = require("./routes/product");
-const medicalRoutes = require("./routes/medical");
-const storeRoutes = require("./routes/store");
-const contactRoutes = require("./routes/contact");
 const errorHandler = require("./middlewares/errorMiddleware");
+const userRoutes = require("./routes/user");
+const houseRoutes = require("./routes/house");
 
 const app = express();
 
-//Middlewares
-app.use(morgan("dev"));
-app.use(cookieParser());
+//middlewares
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cors());
+app.use(morgan("dev"));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://just-erotics.web.app"],
+    credentials: true,
+  })
+);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// connect DB
+const connectDB = () => {
+  mongoose
+    .connect(process.env.MONGO_DB)
+    .then(() => {
+      console.log("Database connected successfuly.");
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
 //Routes
 app.get("/", (req, res) => {
-  res.send("Cybalife");
+  res.send("justerotic");
 });
 
 app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/products", productRoutes);
-app.use("/api/v1/medicals", medicalRoutes);
-app.use("/api/v1/stores", storeRoutes);
-app.use("/api/v1/contact", contactRoutes);
+app.use("/api/v1/house", houseRoutes);
 
 //Error Middleware
 app.use(errorHandler);
 
-//Connect DB and start Server
 const PORT = 7000;
-mongoose
-  .connect(process.env.DB)
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => console.log(err));
+
+app.listen(PORT, () => {
+  connectDB();
+  console.log(`Servering run on port:${PORT}`);
+});

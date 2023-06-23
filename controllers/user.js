@@ -8,13 +8,13 @@ const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+  return jwt.sign({ id }, process.env.JWT_SECRET);
 };
 
-const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+const createUser = asyncHandler(async (req, res) => {
+  const { firstname, lastname, phone, email, password } = req.body;
 
-  if (!name || !email || !password) {
+  if (!firstname || !lastname || !phone || !email || !password) {
     res.status(400);
     throw new Error("Please fill up all required fields.");
   }
@@ -37,7 +37,13 @@ const registerUser = asyncHandler(async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(password, salt);
 
-  const user = await User.create({ name, email, password: hashPassword });
+  const user = await User.create({
+    firstname,
+    lastname,
+    phone,
+    email,
+    password: hashPassword,
+  });
 
   // Generate token
   const token = generateToken(user._id);
@@ -53,11 +59,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (user) {
     res.status(201).json({
-      success: true,
-      data: {
-        ...user._doc,
-        token,
-      },
+      ...user._doc,
+      token,
     });
   } else {
     res.status(400);
@@ -65,6 +68,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
+// login
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -105,11 +109,8 @@ const loginUser = asyncHandler(async (req, res) => {
   //Send Response
   if (user && checkPassword) {
     res.status(200).json({
-      success: true,
-      data: {
-        ...user._doc,
-        token,
-      },
+      ...user._doc,
+      token,
     });
   } else {
     res.status(400);
@@ -145,20 +146,6 @@ const getUser = asyncHandler(async (req, res) => {
   } else {
     res.status(400);
     throw new Error("User not found.");
-  }
-});
-
-const loginStatus = asyncHandler(async (req, res) => {
-  const token = req.cookies.token;
-
-  if (!token) {
-    return res.json(false);
-  }
-
-  const verified = jwt.verify(token, process.env.JWT_SECRET);
-
-  if (verified) {
-    return res.json(true);
   }
 });
 
@@ -204,7 +191,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
   const user = await User.findOne({ email });
-
   if (!user) {
     res.status(404);
     throw new Error("User doesn't exist");
@@ -214,7 +200,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
   if (token) {
     await token.deleteOne();
   }
-
   let resetToken = crypto.randomBytes(32).toString("hex") + user._id;
 
   const hashToken = crypto
@@ -230,26 +215,36 @@ const forgotPassword = asyncHandler(async (req, res) => {
   }).save();
 
   const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
   const message = `
   <h2>Hi ${user.name}</h2>
   <p>Please use the url below to reset your password</p>
   <p>This link expires in 30 minutes</p>
-  <a href=${resetLink} clicktracking=off>${resetLink}</a> 
-  
+  <a href=${resetLink} clicktracking=off>${resetLink}</a>
   <h6>cybalife</h6>
   `;
-  const subject = "Reset Password";
+  const subject = "Password Reset Request";
   const send_to = user.email;
   const send_from = process.env.EMAIL_USER;
-
   try {
     await sendEmail(subject, message, send_to, send_from);
-
     res.status(200).json({ success: true, message: "Reset email sent." });
   } catch (error) {
     res.status(500);
     throw new Error("Email not sent , Please try Again.");
+  }
+});
+
+const loginStatus = asyncHandler(async (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.json(false);
+  }
+
+  const verified = jwt.verify(token, process.env.JWT_SECRET);
+
+  if (verified) {
+    return res.json(true);
   }
 });
 
@@ -272,8 +267,12 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw new Error("Invalid or Expired Token.");
   }
 
+  //Hash user password
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(password, salt);
+
   const user = await User.findOne({ _id: userToken.userId });
-  user.password = password;
+  user.password = hashPassword;
   await user.save();
 
   res.status(200).json({
@@ -283,13 +282,13 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  registerUser,
+  createUser,
   loginUser,
+  logout,
   getUser,
   updateUser,
   deleteUser,
-  logout,
-  loginStatus,
   forgotPassword,
   resetPassword,
+  loginStatus,
 };

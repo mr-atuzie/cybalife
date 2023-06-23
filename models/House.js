@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const productSchema = new mongoose.Schema(
+const houseSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,39 +12,33 @@ const productSchema = new mongoose.Schema(
       trim: true,
       required: [true, "Please enter product name"],
     },
-    sku: {
-      type: String,
-      trim: true,
-      required: true,
-      default: "SKU",
-    },
     category: {
       type: String,
       trim: true,
-      required: [true, "Please enter product category"],
-    },
-    quantity: {
-      type: String,
-      trim: true,
-      required: [true, "Please enter product quantity"],
+      required: [true, "Please enter house type"],
     },
     price: {
       type: String,
       trim: true,
-      required: [true, "Please enter product price"],
+      required: [true, "Please enter house price"],
     },
     description: {
       type: String,
       trim: true,
-      required: [true, "Please enter product description"],
+      required: [true, "Please enter house description"],
     },
     image: {
       type: Object,
       default: {},
     },
+    numberOfRoom: {
+      type: String,
+      trim: true,
+      required: [true, "Please enter number of rooms"],
+    },
   },
   { timestamps: true }
 );
 
-const Product = mongoose.model("Product", productSchema);
-module.exports = Product;
+const House = mongoose.model("Product", houseSchema);
+module.exports = House;

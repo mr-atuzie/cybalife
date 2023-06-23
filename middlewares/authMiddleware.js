@@ -16,12 +16,9 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 
   const user = await User.findById(verifyToken.id).select("-password");
-  if (!user) {
-    res.status(401);
-    throw new Error("User not found.");
-  }
 
   req.user = user;
+
   next();
 });
 
