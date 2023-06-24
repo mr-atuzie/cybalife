@@ -12,9 +12,9 @@ const generateToken = (id) => {
 };
 
 const createUser = asyncHandler(async (req, res) => {
-  const { firstname, lastname, phone, email, password } = req.body;
+  const { name, email, password } = req.body;
 
-  if (!firstname || !lastname || !phone || !email || !password) {
+  if (!name || !email || !password) {
     res.status(400);
     throw new Error("Please fill up all required fields.");
   }
@@ -38,9 +38,7 @@ const createUser = asyncHandler(async (req, res) => {
   const hashPassword = await bcrypt.hash(password, salt);
 
   const user = await User.create({
-    firstname,
-    lastname,
-    phone,
+    name,
     email,
     password: hashPassword,
   });
