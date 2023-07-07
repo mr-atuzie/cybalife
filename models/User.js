@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema(
       trim: true,
       required: [true, "Please enter your name"],
     },
-
     email: {
       type: String,
       trim: true,
@@ -27,6 +26,34 @@ const userSchema = new mongoose.Schema(
     photo: {
       type: String,
       default: "",
+    },
+    DOB: {
+      type: String,
+      default: "",
+    },
+    phone: {
+      type: String,
+      default: "",
+    },
+    location: {
+      type: String,
+      default: "",
+    },
+    nextOfKin: {
+      type: Object,
+    },
+    document: {
+      type: Object,
+    },
+    gurantor: {
+      type: Object,
+    },
+    reserved: {
+      type: Array,
+    },
+    saved: {
+      type: Array,
+      default: [],
     },
   },
   { timestamps: true }

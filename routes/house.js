@@ -11,6 +11,12 @@ router
 
 router.route("/my-products").get(protect, houseController.getAllUserListing);
 
+router.route("/filter-houses").get(protect, houseController.filterPropertyType);
+
+router.route("/notification").get(protect, houseController.getNotification);
+
+router.route("/reserved").get(protect, houseController.reserved);
+
 router
   .route("/:id")
   .get(protect, houseController.getHouse)
@@ -19,5 +25,9 @@ router
 router
   .route("/")
   .patch(protect, upload.single("image"), houseController.updateHouse);
+
+router.route("/reserve-house").patch(protect, houseController.reserveHouse);
+
+router.route("/save-house").patch(protect, houseController.saveHouse);
 
 module.exports = router;

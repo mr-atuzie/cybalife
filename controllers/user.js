@@ -4,11 +4,14 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const { fileSizeFormatter } = require("../utils/fileUpload");
+const cloudinary = require("cloudinary").v2;
 
 const sendEmail = require("../utils/sendEmail");
+const Message = require("../models/Message");
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET);
+const generateToken = (id, username) => {
+  return jwt.sign({ id, username }, process.env.JWT_SECRET);
 };
 
 const createUser = asyncHandler(async (req, res) => {
@@ -44,7 +47,7 @@ const createUser = asyncHandler(async (req, res) => {
   });
 
   // Generate token
-  const token = generateToken(user._id);
+  const token = generateToken(user._id, user.name);
 
   //Send HTTP-only cookie
   res.cookie("token", token, {
@@ -93,7 +96,7 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   //Generate Token
-  const token = generateToken(user._id);
+  const token = generateToken(user._id, user.name);
 
   //Send HTTP-only
   res.cookie("token", token, {
@@ -135,12 +138,19 @@ const getUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
-    res.status(200).json({
-      success: true,
-      data: {
-        user,
-      },
-    });
+    res.status(200).json(user);
+  } else {
+    res.status(400);
+    throw new Error("User not found.");
+  }
+});
+
+const getUserById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(id);
+
+  if (user) {
+    res.status(200).json(user);
   } else {
     res.status(400);
     throw new Error("User not found.");
@@ -156,10 +166,7 @@ const updateUser = asyncHandler(async (req, res) => {
     });
 
     res.status(200).json({
-      success: true,
-      data: {
-        user,
-      },
+      user,
     });
   } else {
     res.status(400);
@@ -279,14 +286,110 @@ const resetPassword = asyncHandler(async (req, res) => {
   });
 });
 
+const addGuarantor = asyncHandler(async (req, res) => {
+  const { name, email, phone, occupation, address } = req.body;
+
+  if (!name || !email || !phone || !occupation || !address) {
+    res.status(400);
+    throw new Error("Please fill up all required fields.");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { gurantor: { name, email, phone, occupation, address } } },
+    {
+      new: true,
+    }
+  );
+
+  res.status(200).json(user);
+});
+
+const addNextOfKin = asyncHandler(async (req, res) => {
+  const { name, email, phone, relationship } = req.body;
+
+  if (!name || !email || !phone || !relationship) {
+    res.status(400);
+    throw new Error("Please fill up all required fields.");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { nextOfKin: { name, email, phone, relationship } } },
+    {
+      new: true,
+    }
+  );
+
+  res.status(200).json(user);
+});
+
+const addDocument = asyncHandler(async (req, res) => {
+  const { idType, idNumber } = req.body;
+
+  if (!idType || !idNumber) {
+    res.status(400);
+    throw new Error("Please fill up all required fields.");
+  }
+
+  let fileData = {};
+  if (req.file) {
+    let uploadedFile;
+
+    try {
+      uploadedFile = await cloudinary.uploader.upload(req.file.path, {
+        folder: "Houses",
+        resource_type: "image",
+      });
+    } catch (error) {
+      res.status(500);
+      res.send(error);
+      throw new Error("Unable to upload image, Please try again.");
+    }
+    fileData = {
+      fileName: req.file.originalname,
+      filePath: uploadedFile.secure_url,
+      fileType: req.file.mimetype,
+      fileSize: fileSizeFormatter(req.file.size),
+    };
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { document: { idType, idNumber, image: fileData } } },
+    {
+      new: true,
+    }
+  );
+
+  res.status(200).json(user);
+});
+
+const getChats = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(req.user._id);
+
+  const messages = await Message.find({
+    sender: { $in: [id, user._id] },
+    recipient: { $in: [id, user._id] },
+  }).sort({ createdAt: 1 });
+
+  res.status(200).json(messages);
+});
+
 module.exports = {
   createUser,
   loginUser,
   logout,
   getUser,
+  getUserById,
   updateUser,
   deleteUser,
   forgotPassword,
   resetPassword,
   loginStatus,
+  addGuarantor,
+  addNextOfKin,
+  addDocument,
+  getChats,
 };

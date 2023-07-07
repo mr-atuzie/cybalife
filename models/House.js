@@ -7,38 +7,85 @@ const houseSchema = new mongoose.Schema(
       required: true,
       ref: "user",
     },
-    name: {
+    address: {
       type: String,
       trim: true,
-      required: [true, "Please enter product name"],
     },
-    category: {
+    propertySize: {
       type: String,
       trim: true,
-      required: [true, "Please enter house type"],
+    },
+    propertyType: {
+      type: String,
+      trim: true,
+    },
+    yearBuilt: {
+      type: String,
+      trim: true,
+    },
+    lotSize: {
+      type: String,
+      trim: true,
+    },
+    numberOfBedrooms: {
+      type: String,
+      trim: true,
+    },
+    numberOfPartialBathrooms: {
+      type: String,
+      trim: true,
     },
     price: {
       type: String,
       trim: true,
-      required: [true, "Please enter house price"],
     },
-    description: {
+    desc: {
       type: String,
       trim: true,
-      required: [true, "Please enter house description"],
+    },
+    electricBill: {
+      type: String,
+      trim: true,
+    },
+    waterBill: {
+      type: String,
+      trim: true,
+    },
+    wasteBill: {
+      type: String,
+      trim: true,
     },
     image: {
       type: Object,
       default: {},
     },
-    numberOfRoom: {
+    buildingType: {
       type: String,
       trim: true,
-      required: [true, "Please enter number of rooms"],
+    },
+    numberOfFullBathrooms: {
+      type: String,
+      trim: true,
+    },
+    type: {
+      type: String,
+      trim: true,
+    },
+    windows: {
+      type: String,
+      trim: true,
+    },
+    unit: {
+      type: String,
+      trim: true,
+    },
+    leasePeriod: {
+      type: String,
+      trim: true,
     },
   },
   { timestamps: true }
 );
 
-const House = mongoose.model("Product", houseSchema);
+const House = mongoose.model("Listing", houseSchema);
 module.exports = House;
