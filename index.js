@@ -25,7 +25,10 @@ app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://just-erotics.web.app"],
+    origin: [
+      "http://localhost:3000",
+      "https://statuesque-chebakia-db168b.netlify.app",
+    ],
     credentials: true,
   })
 );
