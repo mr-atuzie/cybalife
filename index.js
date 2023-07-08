@@ -8,11 +8,9 @@ const morgan = require("morgan");
 const path = require("path");
 const ws = require("ws");
 const jwt = require("jsonwebtoken");
-
 const errorHandler = require("./middlewares/errorMiddleware");
 const userRoutes = require("./routes/user");
 const houseRoutes = require("./routes/house");
-const { log } = require("console");
 const Message = require("./models/Message");
 
 const app = express();
