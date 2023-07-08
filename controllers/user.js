@@ -80,7 +80,7 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   //Check if user exist
-  const user = await User.findOne({ email: ema });
+  const user = await User.findOne({ email });
 
   if (!user) {
     res.status(400);
