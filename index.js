@@ -1,4 +1,3 @@
-const path = require("path");
 const dotenv = require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -9,6 +8,7 @@ const morgan = require("morgan");
 const ws = require("ws");
 const jwt = require("jsonwebtoken");
 const errorHandler = require("./middlewares/errorMiddleware");
+const path = require("path");
 const userRoutes = require("./routes/user");
 const houseRoutes = require("./routes/house");
 const Message = require("./models/Message");
@@ -31,7 +31,7 @@ app.use(
   })
 );
 
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // connect DB
 const connectDB = () => {
