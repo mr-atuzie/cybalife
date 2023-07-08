@@ -47,7 +47,7 @@ const connectDB = () => {
 
 //Routes
 app.get("/", (req, res) => {
-  res.send("justerotic");
+  res.send("house");
 });
 
 app.use("/api/v1/users", userRoutes);
