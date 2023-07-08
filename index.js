@@ -1,3 +1,4 @@
+const path = require("path");
 const dotenv = require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -5,7 +6,6 @@ const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
-const path = require("path");
 const ws = require("ws");
 const jwt = require("jsonwebtoken");
 const errorHandler = require("./middlewares/errorMiddleware");
