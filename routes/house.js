@@ -26,6 +26,8 @@ router
   .route("/")
   .patch(protect, upload.single("image"), houseController.updateHouse);
 
+router.route("/review/:id").patch(protect, houseController.reviewHouse);
+
 router.route("/reserve-house").patch(protect, houseController.reserveHouse);
 
 router.route("/save-house").patch(protect, houseController.saveHouse);

@@ -83,6 +83,10 @@ const houseSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    reviews: {
+      type: Array,
+      default: [],
+    },
   },
   { timestamps: true }
 );

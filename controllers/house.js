@@ -122,17 +122,7 @@ const getHouse = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 
-  if (product.user.toString() !== req.user.id) {
-    res.status(401);
-    throw new Error("User is not authorized");
-  }
-
-  res.status(200).json({
-    success: true,
-    data: {
-      product,
-    },
-  });
+  res.status(200).json(product);
 });
 
 const getAllHouses = asyncHandler(async (req, res) => {
@@ -297,7 +287,49 @@ const getNotification = asyncHandler(async (req, res) => {
   });
 });
 
-// love
+const reviewHouse = asyncHandler(async (req, res) => {
+  const { rating, comment } = req.body;
+
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User does not exist");
+  }
+
+  const product = await House.findById(req.params.id);
+
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  if (product.user.toString() !== req.user.id) {
+    res.status(401);
+    throw new Error("User is not authorized");
+  }
+
+  if (!rating || !comment) {
+    res.status(404);
+    throw new Error("Please fill in all fields");
+  }
+
+  const review = {
+    by: user.name,
+    rating,
+    comment,
+  };
+
+  const newProduct = await House.findByIdAndUpdate(
+    req.params.id,
+    { $set: { reviews: [...product.reviews, review] } },
+    {
+      new: true,
+    }
+  );
+
+  res.status(200).json(newProduct);
+});
 
 module.exports = {
   addHouse,
@@ -311,4 +343,5 @@ module.exports = {
   reserveHouse,
   reserved,
   saveHouse,
+  reviewHouse,
 };
