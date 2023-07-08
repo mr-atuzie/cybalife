@@ -16,6 +16,10 @@ router
   .route("/add-document")
   .put(protect, upload.single("image"), userController.addDocument);
 
+router
+  .route("/upload-picture")
+  .put(protect, upload.single("image"), userController.uploadPicture);
+
 router.route("/logout").get(userController.logout);
 
 router.route("/my-account").get(protect, userController.getUser);

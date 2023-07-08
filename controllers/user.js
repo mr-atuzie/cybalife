@@ -365,6 +365,42 @@ const addDocument = asyncHandler(async (req, res) => {
   res.status(200).json(user);
 });
 
+const uploadPicture = asyncHandler(async (req, res) => {
+  let fileData = {};
+
+  if (req.file) {
+    let uploadedFile;
+
+    try {
+      uploadedFile = await cloudinary.uploader.upload(req.file.path, {
+        folder: "Houses",
+        resource_type: "image",
+      });
+    } catch (error) {
+      res.status(500);
+      res.send(error);
+      throw new Error("Unable to upload image, Please try again.");
+    }
+
+    fileData = {
+      fileName: req.file.originalname,
+      filePath: uploadedFile.secure_url,
+      fileType: req.file.mimetype,
+      fileSize: fileSizeFormatter(req.file.size),
+    };
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { photo: fileData.filePath } },
+    {
+      new: true,
+    }
+  );
+
+  res.status(200).json(user);
+});
+
 const getChats = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const user = await User.findById(req.user._id);
@@ -392,4 +428,5 @@ module.exports = {
   addNextOfKin,
   addDocument,
   getChats,
+  uploadPicture,
 };
