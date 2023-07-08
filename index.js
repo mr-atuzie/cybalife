@@ -58,7 +58,7 @@ app.use("/api/v1/house", houseRoutes);
 //Error Middleware
 app.use(errorHandler);
 
-const PORT = 7000;
+const PORT = process.env.PORT || 7000;
 
 const server = app.listen(PORT, () => {
   connectDB();
