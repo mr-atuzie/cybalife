@@ -36,7 +36,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // connect DB
 const connectDB = () => {
   mongoose
-    .connect(process.env.MONGO_DB)
+    .connect(process.env.DB)
     .then(() => {
       console.log("Database connected successfuly.");
     })
