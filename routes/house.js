@@ -11,7 +11,9 @@ router
 
 router.route("/my-products").get(protect, houseController.getAllUserListing);
 
-router.route("/filter-houses").get(protect, houseController.filterPropertyType);
+router
+  .route("/filter-houses/:type")
+  .get(protect, houseController.filterPropertyType);
 
 router.route("/notification").get(protect, houseController.getNotification);
 

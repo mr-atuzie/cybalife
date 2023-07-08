@@ -259,17 +259,17 @@ const removeHouse = asyncHandler(async (req, res) => {
 });
 
 const filterPropertyType = asyncHandler(async (req, res) => {
-  const { houseType } = req.body;
+  const { type } = req.params;
 
   // res.send(houseType);
 
-  if (!houseType) {
+  if (!type) {
     res.status(404);
     throw new Error("Unable to valid this request");
   }
 
   const houses = await House.find({
-    propertyType: houseType,
+    propertyType: type,
   });
 
   res.status(200).json({
