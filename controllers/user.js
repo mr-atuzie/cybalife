@@ -444,8 +444,6 @@ const sendChat = asyncHandler(async (req, res) => {
       {
         $set: {
           LastMessage: text,
-          senderPhoto: user.photo,
-          recipientPhoto: to.photo,
         },
       }
     );
