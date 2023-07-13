@@ -29,7 +29,7 @@ router.route("/my-account").get(protect, userController.getUser);
 
 router.route("/recent-chats").get(protect, userController.getChats);
 
-router.route("/get-user/:id").get(protect, userController.getUserById);
+router.route("/get-user/:id").get(userController.getUserById);
 
 router.route("/get-chats/:id").get(protect, userController.getMsgs);
 
