@@ -441,7 +441,13 @@ const sendChat = asyncHandler(async (req, res) => {
   if (chatDoc) {
     await Chats.findOneAndUpdate(
       { recipient: to._id },
-      { $set: { LastMessage: text } }
+      {
+        $set: {
+          LastMessage: text,
+          senderPhoto: user.photo,
+          recipientPhoto: to.photo,
+        },
+      }
     );
   }
 
