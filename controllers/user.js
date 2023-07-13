@@ -9,6 +9,7 @@ const cloudinary = require("cloudinary").v2;
 
 const sendEmail = require("../utils/sendEmail");
 const Message = require("../models/Message");
+const Chats = require("../models/Chats");
 
 const generateToken = (id, username) => {
   return jwt.sign({ id, username }, process.env.JWT_SECRET);
@@ -401,7 +402,59 @@ const uploadPicture = asyncHandler(async (req, res) => {
   res.status(200).json(user);
 });
 
+const sendChat = asyncHandler(async (req, res) => {
+  const { recipient, text } = req.body;
+
+  const user = await User.findById(req.user._id);
+  const to = await User.findById(recipient);
+
+  //validate req
+  if (!recipient || !text) {
+    res.status(400);
+    throw new Error("all  fields are required ");
+  }
+
+  // create message
+  await Message.create({
+    sender: user._id,
+    recipient,
+    text,
+  });
+
+  //check if chat doc exist
+  const chatDoc = await Chats.findOne({ recipient });
+
+  //!chatdoc. create one
+  if (!chatDoc) {
+    await Chats.create({
+      userId: user._id,
+      recipient: to._id,
+      LastMessage: text,
+      photo: to.photo,
+      name: to.name,
+    });
+  }
+
+  // if there's chat , update last message
+  if (chatDoc) {
+    await Chats.findOneAndUpdate(
+      { recipient: to._id },
+      { $set: { LastMessage: text } }
+    );
+  }
+
+  res.status(200).json("message sent.");
+});
+
 const getChats = asyncHandler(async (req, res) => {
+  const products = await Chats.find({ userId: req.user._id }).sort(
+    "-createdAt"
+  );
+
+  res.status(200).json(products);
+});
+
+const getMsgs = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const user = await User.findById(req.user._id);
 
@@ -428,5 +481,7 @@ module.exports = {
   addNextOfKin,
   addDocument,
   getChats,
+  sendChat,
   uploadPicture,
+  getMsgs,
 };
