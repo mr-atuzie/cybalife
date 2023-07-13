@@ -457,7 +457,7 @@ const sendChat = asyncHandler(async (req, res) => {
 const getChats = asyncHandler(async (req, res) => {
   const products = await Chats.find({
     $or: [{ userId: req.user._id }, { recipient: req.user._id }],
-  }).sort("-createdAt");
+  }).sort({ createdAt: 1 });
 
   res.status(200).json(products);
 });
