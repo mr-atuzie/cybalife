@@ -428,10 +428,12 @@ const sendChat = asyncHandler(async (req, res) => {
   if (!chatDoc) {
     await Chats.create({
       userId: user._id,
+      senderName: user.name,
+      senderPhoto: user.photo,
       recipient: to._id,
+      recipientName: to.name,
+      recipientPhoto: to.photo,
       LastMessage: text,
-      photo: to.photo,
-      name: to.name,
     });
   }
 

@@ -10,10 +10,16 @@ const chatsSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
-    photo: {
+    senderPhoto: {
       type: String,
     },
-    name: {
+    recipientPhoto: {
+      type: String,
+    },
+    senderName: {
+      type: String,
+    },
+    recipientName: {
       type: String,
     },
     LastMessage: {

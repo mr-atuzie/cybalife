@@ -99,6 +99,7 @@ const addHouse = asyncHandler(async (req, res) => {
     await Notification.create({
       userId: req.user._id,
       name: req.user.name,
+      photo: req.user.photo,
     });
     //create notification
 
