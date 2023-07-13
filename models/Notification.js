@@ -12,6 +12,9 @@ const notificationSchema = new mongoose.Schema(
       trim: true,
       required: [true, "Notfications needs a name"],
     },
+    photo: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
