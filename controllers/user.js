@@ -460,6 +460,14 @@ const getChats = asyncHandler(async (req, res) => {
   res.status(200).json(products);
 });
 
+const searchUser = asyncHandler(async (req, res) => {
+  const { name } = req.body;
+
+  const person = await User.findOne({ name: name });
+
+  res.status(200).json(person);
+});
+
 const getMsgs = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const user = await User.findById(req.user._id);
@@ -490,4 +498,5 @@ module.exports = {
   sendChat,
   uploadPicture,
   getMsgs,
+  searchUser,
 };

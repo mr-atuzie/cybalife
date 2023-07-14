@@ -31,6 +31,8 @@ router.route("/recent-chats").get(protect, userController.getChats);
 
 router.route("/get-user/:id").get(userController.getUserById);
 
+router.route("/search").post(protect, userController.searchUser);
+
 router.route("/get-chats/:id").get(protect, userController.getMsgs);
 
 router.route("/login-status").get(userController.loginStatus);
