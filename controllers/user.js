@@ -454,10 +454,6 @@ const sendChat = asyncHandler(async (req, res) => {
       { _id: chatDoc1._id },
       {
         $set: {
-          senderName: user.name,
-          senderPhoto: user.photo,
-          recipientName: to.name,
-          recipientPhoto: to.photo,
           LastMessage: text,
         },
       }
@@ -469,10 +465,6 @@ const sendChat = asyncHandler(async (req, res) => {
       { _id: chatDoc2._id },
       {
         $set: {
-          senderName: user.name,
-          senderPhoto: user.photo,
-          recipientName: to.name,
-          recipientPhoto: to.photo,
           LastMessage: text,
         },
       }
