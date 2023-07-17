@@ -407,6 +407,8 @@ const sendChat = asyncHandler(async (req, res) => {
 
   const user = await User.findById(req.user._id);
   const to = await User.findById(recipient);
+  const alt1 = `${user._id}-${to._id}`;
+  const alt2 = `${to._id}-${user._id}`;
 
   //validate req
   if (!recipient || !text) {
@@ -421,12 +423,21 @@ const sendChat = asyncHandler(async (req, res) => {
     text,
   });
 
-  //check if chat doc exist
-  const chatDoc = await Chats.findOne({ recipient });
+  const chatDoc1 = await Chats.findOne({ chatId: alt1 });
+  const chatDoc2 = await Chats.findOne({ chatId: alt2 });
 
-  //!chatdoc. create one
-  if (!chatDoc) {
+  // const chatId2 = `${to._id}${user._id}`;
+
+  // const chatDoc = await Chats.find({
+  //   $or: [{ chatId: chatId1 }, { chatId: chatId2 }],
+  // });
+
+  // check if chat doc exist
+
+  // !chatdoc. create one
+  if (!chatDoc1 && !chatDoc2) {
     await Chats.create({
+      chatId: alt1,
       userId: user._id,
       senderName: user.name,
       senderPhoto: user.photo,
@@ -438,18 +449,37 @@ const sendChat = asyncHandler(async (req, res) => {
   }
 
   // if there's chat , update last message
-  if (chatDoc) {
+  if (chatDoc1) {
     await Chats.findOneAndUpdate(
-      { recipient: to._id },
+      { _id: chatDoc1._id },
       {
         $set: {
+          senderName: user.name,
+          senderPhoto: user.photo,
+          recipientName: to.name,
+          recipientPhoto: to.photo,
           LastMessage: text,
         },
       }
     );
   }
 
-  res.status(200).json("message sent.");
+  if (chatDoc2) {
+    await Chats.findOneAndUpdate(
+      { _id: chatDoc2._id },
+      {
+        $set: {
+          senderName: user.name,
+          senderPhoto: user.photo,
+          recipientName: to.name,
+          recipientPhoto: to.photo,
+          LastMessage: text,
+        },
+      }
+    );
+  }
+
+  res.status(200).json({ alt1, alt2, chatDoc1, chatDoc2 });
 });
 
 const getChats = asyncHandler(async (req, res) => {
