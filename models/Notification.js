@@ -14,6 +14,7 @@ const notificationSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
+      default: "",
     },
   },
   { timestamps: true }
