@@ -455,6 +455,8 @@ const sendChat = asyncHandler(async (req, res) => {
       {
         $set: {
           LastMessage: text,
+          recipientPhoto: to.photo,
+          senderPhoto: user.photo,
         },
       }
     );
@@ -466,6 +468,8 @@ const sendChat = asyncHandler(async (req, res) => {
       {
         $set: {
           LastMessage: text,
+          recipientPhoto: to.photo,
+          senderPhoto: user.photo,
         },
       }
     );
