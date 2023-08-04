@@ -7,10 +7,14 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const ws = require("ws");
 const jwt = require("jsonwebtoken");
+
 const errorHandler = require("./middlewares/errorMiddleware");
 const path = require("path");
+
 const userRoutes = require("./routes/user");
 const houseRoutes = require("./routes/house");
+const chatRoutes = require("./routes/chat");
+const msgRoutes = require("./routes/message");
 const Message = require("./models/Message");
 
 const app = express();
@@ -52,6 +56,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/house", houseRoutes);
+app.use("/api/v1/chat", chatRoutes);
+app.use("/api/v1/messages", msgRoutes);
 
 //Error Middleware
 app.use(errorHandler);
