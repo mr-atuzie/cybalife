@@ -25,10 +25,7 @@ app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://statuesque-chebakia-db168b.netlify.app",
-    ],
+    origin: ["http://localhost:3000", "https://houx.netlify.app"],
     credentials: true,
   })
 );
