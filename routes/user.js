@@ -10,9 +10,6 @@ router.route("/login").post(userController.loginUser);
 
 router.route("/add-guarantor").put(protect, userController.addGuarantor);
 
-//send chat
-router.route("/chat").post(protect, userController.sendChat);
-
 router.route("/add-nextOfKin").put(protect, userController.addNextOfKin);
 
 router
@@ -27,13 +24,9 @@ router.route("/logout").get(userController.logout);
 
 router.route("/my-account").get(protect, userController.getUser);
 
-router.route("/recent-chats").get(protect, userController.getChats);
-
 router.route("/get-user/:id").get(userController.getUserById);
 
 router.route("/search").post(protect, userController.searchUser);
-
-router.route("/get-chats/:id").get(protect, userController.getMsgs);
 
 router.route("/login-status").get(userController.loginStatus);
 

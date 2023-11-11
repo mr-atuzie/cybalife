@@ -6,10 +6,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { fileSizeFormatter } = require("../utils/fileUpload");
 const cloudinary = require("cloudinary").v2;
-
 const sendEmail = require("../utils/sendEmail");
-const Message = require("../models/Message");
-const Chats = require("../models/Chats");
 
 const generateToken = (id, username) => {
   return jwt.sign({ id, username }, process.env.JWT_SECRET);
@@ -251,6 +248,8 @@ const loginStatus = asyncHandler(async (req, res) => {
 
   if (verified) {
     return res.json(true);
+  } else {
+    return res.json(false);
   }
 });
 
@@ -402,108 +401,12 @@ const uploadPicture = asyncHandler(async (req, res) => {
   res.status(200).json(user);
 });
 
-const sendChat = asyncHandler(async (req, res) => {
-  const { recipient, text } = req.body;
-
-  const user = await User.findById(req.user._id);
-  const to = await User.findById(recipient);
-  const alt1 = `${user._id}-${to._id}`;
-  const alt2 = `${to._id}-${user._id}`;
-
-  //validate req
-  if (!recipient || !text) {
-    res.status(400);
-    throw new Error("all  fields are required ");
-  }
-
-  // create message
-  await Message.create({
-    sender: user._id,
-    recipient,
-    text,
-  });
-
-  const chatDoc1 = await Chats.findOne({ chatId: alt1 });
-  const chatDoc2 = await Chats.findOne({ chatId: alt2 });
-
-  // const chatId2 = `${to._id}${user._id}`;
-
-  // const chatDoc = await Chats.find({
-  //   $or: [{ chatId: chatId1 }, { chatId: chatId2 }],
-  // });
-
-  // check if chat doc exist
-
-  // !chatdoc. create one
-  if (!chatDoc1 && !chatDoc2) {
-    await Chats.create({
-      chatId: alt1,
-      userId: user._id,
-      senderName: user.name,
-      senderPhoto: user.photo,
-      recipient: to._id,
-      recipientName: to.name,
-      recipientPhoto: to.photo,
-      LastMessage: text,
-    });
-  }
-
-  // if there's chat , update last message
-  if (chatDoc1) {
-    await Chats.findOneAndUpdate(
-      { _id: chatDoc1._id },
-      {
-        $set: {
-          LastMessage: text,
-          recipientPhoto: to.photo,
-          senderPhoto: user.photo,
-        },
-      }
-    );
-  }
-
-  if (chatDoc2) {
-    await Chats.findOneAndUpdate(
-      { _id: chatDoc2._id },
-      {
-        $set: {
-          LastMessage: text,
-          recipientPhoto: to.photo,
-          senderPhoto: user.photo,
-        },
-      }
-    );
-  }
-
-  res.status(200).json({ alt1, alt2, chatDoc1, chatDoc2 });
-});
-
-const getChats = asyncHandler(async (req, res) => {
-  const products = await Chats.find({
-    $or: [{ userId: req.user._id }, { recipient: req.user._id }],
-  }).sort({ createdAt: -1 });
-
-  res.status(200).json(products);
-});
-
 const searchUser = asyncHandler(async (req, res) => {
   const { name } = req.body;
 
   const person = await User.findOne({ name: name });
 
   res.status(200).json(person);
-});
-
-const getMsgs = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const user = await User.findById(req.user._id);
-
-  const messages = await Message.find({
-    sender: { $in: [id, user._id] },
-    recipient: { $in: [id, user._id] },
-  }).sort({ createdAt: 1 });
-
-  res.status(200).json(messages);
 });
 
 module.exports = {
@@ -520,9 +423,9 @@ module.exports = {
   addGuarantor,
   addNextOfKin,
   addDocument,
-  getChats,
-  sendChat,
+  // getChats,
+  // sendChat,
   uploadPicture,
-  getMsgs,
+  // getMsgs,
   searchUser,
 };

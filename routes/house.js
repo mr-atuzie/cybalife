@@ -17,7 +17,7 @@ router
 
 router.route("/notification").get(protect, houseController.getNotification);
 
-router.route("/reserved").get(protect, houseController.reserved);
+router.route("/reserved").get(protect, houseController.getReservedHouse);
 
 router
   .route("/:id")
