@@ -12,6 +12,7 @@ const connectDB = require("./config/db");
 
 const userRoutes = require("./routes/user");
 const houseRoutes = require("./routes/house");
+const pakamRoutes = require("./routes/pakam");
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/house", houseRoutes);
+app.use("/api/v1/pakam", pakamRoutesRoutes);
 
 //Error Middleware
 app.use(errorHandler);
