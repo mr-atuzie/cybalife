@@ -26,7 +26,11 @@ app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://houx.netlify.app"],
+    origin: [
+      "http://localhost:3000",
+      "https://houx.netlify.app",
+      "https://pakam.netlify.app",
+    ],
     credentials: true,
   })
 );
@@ -40,7 +44,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/house", houseRoutes);
-app.use("/api/v1/pakam", pakamRoutesRoutes);
+app.use("/api/v1/pakam", pakamRoutes);
 
 //Error Middleware
 app.use(errorHandler);
