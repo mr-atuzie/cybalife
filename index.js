@@ -10,8 +10,6 @@ const { errorHandler, notFound } = require("./middlewares/errorMiddleware");
 const path = require("path");
 const connectDB = require("./config/db");
 
-const userRoutes = require("./routes/user");
-const houseRoutes = require("./routes/house");
 const pakamRoutes = require("./routes/pakam");
 
 const app = express();
@@ -39,11 +37,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 //Routes
 app.get("/", (req, res) => {
-  res.send("house");
+  res.send("pakam");
 });
 
-app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/house", houseRoutes);
 app.use("/api/v1/pakam", pakamRoutes);
 
 //Error Middleware
@@ -53,5 +49,5 @@ app.use(notFound);
 const PORT = process.env.PORT || 7000;
 
 app.listen(PORT, () => {
-  console.log(`Servering run on port:${PORT}`);
+  console.log(`Servering run on port:${PORT}`.cyan.underline.bold);
 });
